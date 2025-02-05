@@ -3,9 +3,9 @@ from ..config import Base
 
 class User(Base):
     """
-    SQLAlchemy model for the 'user' table.
+    SQLAlchemy model for the 'users' table.
     """
-    __tablename__ = "user"
+    __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False, unique=True)
     username = Column(String(255), nullable=False, unique=True)
