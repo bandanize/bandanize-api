@@ -10,7 +10,6 @@ from sqlalchemy.orm import Session
 from ..config import SessionLocal
 from .schemas import UserSchema, CreateUser, Token, TokenData
 from .crud import get_user_by_username, create_user, authenticate_user
-from .utils import get_password_hash
 
 # openssl rand -hex 32
 SECRET_KEY = "ff32512beff88ad5c799cd814297d24068f50a9ee7ba64bf653939a69ba64ae8"
@@ -30,6 +29,9 @@ def get_db():
         db.close()
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    """
+    Create a JWT token with an optional expiration time.
+    """
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -40,6 +42,9 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Session = Depends(get_db)):
+    """
+    Retrieve the current user based on the provided JWT token.
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -61,6 +66,9 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Se
 async def get_current_active_user(
     current_user: Annotated[UserSchema, Depends(get_current_user)]
 ):
+    """
+    Ensure the current user is active.
+    """
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
@@ -73,6 +81,9 @@ async def get_current_active_user(
     response_model_by_alias=False,
 )
 async def create_user_service(user: CreateUser = Body(...), db: Session = Depends(get_db)):
+    """
+    Create a new user in the database.
+    """
     db_user = get_user_by_username(db, user.username)
     if db_user:
         raise HTTPException(
@@ -91,6 +102,9 @@ async def create_user_service(user: CreateUser = Body(...), db: Session = Depend
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Session = Depends(get_db)
 ) -> Token:
+    """
+    Authenticate the user and return a JWT token.
+    """
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -113,4 +127,7 @@ async def login_for_access_token(
 async def read_users_me(
     current_user: Annotated[UserSchema, Depends(get_current_active_user)]
 ):
+    """
+    Retrieve the current authenticated user's data.
+    """
     return current_user
