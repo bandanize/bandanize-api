@@ -66,7 +66,7 @@ async def get_current_active_user(
     return current_user
 
 @router.post(
-    "/users/new/",
+    "/new/",
     response_description="Add new user",
     response_model=UserSchema,
     status_code=status.HTTP_201_CREATED,
@@ -105,7 +105,7 @@ async def login_for_access_token(
     return Token(access_token=access_token, token_type="bearer")
 
 @router.get(
-    "/users/me/",
+    "/me/",
     response_model=UserSchema,
     response_description="Gets actual user data",
     response_model_by_alias=False,
